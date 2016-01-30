@@ -27,9 +27,15 @@ stages:
       application: ${CF_APP}
     script: |-
       #!/bin/bash
-      cf push "${CF_APP}"
-
+      # Publish ordersAPI
       if ! cf service ordersAPI > /dev/null; then
-        export HOST=http://$(cf app $CF_APP | grep urls: | awk '{print $2}')
-        cf cups ordersAPI -p '{"host":"$HOST"}'
+        cf cups ordersAPI
       fi
+
+      # Push app
+      export CF_APP_NAME="$CF_APP"
+      cf push "${CF_APP_NAME}"
+
+      # Update ordersAPI
+      HOST=http://$(cf app $CF_APP_NAME | grep urls: | awk '{print $2}')
+      cf uups ordersAPI -p '{"host":"'$HOST'"}'
